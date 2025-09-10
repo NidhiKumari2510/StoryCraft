@@ -19,8 +19,8 @@ export async function generateStory(subject: string, storyType: string, ageGroup
     - Age group: ${ageGroup}
     - Image style: ${imageStyle}
 
-    The story should be simple, kid-friendly, and split into 4 short pages.
-    Each page should have around 3–4 sentences.
+    The story should be simple, kid-friendly, and split into 5 short pages.
+    Each page should have around 5–6 sentences.
     Return the story in JSON format with "pages": [{text: "..."}].
     `;
 
