@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -6,37 +6,96 @@ import {
   Heart,
   ArrowLeft,
 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import jsPDF from "jspdf";
 import { Story } from "../App";
 
 interface StoryDisplayProps {
-  story: Story;
-  onBackToCreate: () => void;
+  story?: Story;
 }
 
-const StoryDisplay: React.FC<StoryDisplayProps> = ({
-  story,
-  onBackToCreate,
-}) => {
+const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
+  const location = useLocation();
+  const state = location.state as { story: Story } | null;
+
+  // ✅ Use propStory if passed, else use story from location.state
+  const story: Story | undefined = propStory || state?.story;
+
   const [currentPage, setCurrentPage] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/login");
+  }, [navigate]);
+
+  if (!story) {
+    navigate("/create");
+    return null;
+  }
 
   const nextPage = () => {
-    if (currentPage < story.pages.length - 1) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (currentPage < story.pages.length - 1) setCurrentPage(currentPage + 1);
   };
 
   const prevPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (currentPage > 0) setCurrentPage(currentPage - 1);
   };
 
   const downloadPDF = () => {
-    alert("PDF download feature coming soon! 📄✨");
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text(story.title, 20, 20);
+
+    doc.setFontSize(14);
+    let yOffset = 40;
+
+    // ✅ Add explicit typing to avoid red underline
+    story.pages.forEach(
+      (page: { text: string; illustration: string }, i: number) => {
+        if (yOffset > 260) {
+          doc.addPage();
+          yOffset = 20;
+        }
+        doc.text(`Page ${i + 1}:`, 20, yOffset);
+        yOffset += 10;
+        const splitText = doc.splitTextToSize(page.text, 170);
+        doc.text(splitText, 20, yOffset);
+        yOffset += splitText.length * 7 + 10;
+      }
+    );
+
+    doc.save(`${story.title}.pdf`);
   };
 
-  const saveToLibrary = () => {
-    alert("Story saved to your library! 📚💝");
+  const saveToLibrary = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/stories/save`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(story),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) alert("🎉 Story saved to your library successfully!");
+      else alert(`⚠️ Failed to save story: ${data.message || "Try again."}`);
+    } catch (error) {
+      console.error(error);
+      alert("❌ Something went wrong while saving the story.");
+    }
   };
 
   return (
@@ -44,7 +103,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       {/* Left Fixed Poster */}
       <div className="w-1/3 flex items-center justify-center p-6">
         <img
-          src="/picture.png" // put your poster image in public/story-poster.png
+          src="/picture.png"
           alt="Story Poster"
           className="w-full h-auto object-cover rounded-2xl shadow-lg"
         />
@@ -54,7 +113,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
       <div className="w-2/3 pl-6">
         {/* Back Button */}
         <button
-          onClick={onBackToCreate}
+          onClick={() => navigate("/CreateStory")}
           className="mb-6 flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-purple-200"
         >
           <ArrowLeft className="w-5 h-5 text-purple-600" />
@@ -77,33 +136,14 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
 
         {/* Flipbook Container */}
         <div className="relative bg-gradient-to-br from-white/80 to-purple-50 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-200 mb-8">
-          {/* Floating Decorations */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <span className="absolute top-8 left-10 text-yellow-300 text-2xl animate-bounce">
-              ⭐
-            </span>
-            <span className="absolute bottom-10 right-12 text-pink-400 text-xl animate-pulse">
-              💖
-            </span>
-            <span className="absolute top-20 right-8 text-purple-300 text-lg animate-spin-slow">
-              🌸
-            </span>
-            <span className="absolute bottom-6 left-6 text-blue-300 text-xl animate-bounce">
-              ✨
-            </span>
-          </div>
           <div className="aspect-[4/3] relative">
-            {/* Current Page - Only Text */}
             <div className="absolute inset-0 p-8 md:p-12 flex items-center justify-center">
               <div
                 className="bg-gradient-to-br from-pink-100 via-purple-100 to-yellow-100 
                 rounded-3xl p-10 border-4 border-dashed border-pink-300 
                 shadow-xl w-full"
               >
-                <p
-                  className="text-lg md:text-xl leading-relaxed text-purple-900 
-                font-comic tracking-wide text-center"
-                >
+                <p className="text-lg md:text-xl leading-relaxed text-purple-900 font-comic tracking-wide text-center">
                   {story.pages[currentPage].text}
                 </p>
               </div>
@@ -133,21 +173,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({
             >
               <ChevronRight className="w-6 h-6" />
             </button>
-          </div>
-
-          {/* Page Indicators */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {story.pages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentPage(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentPage
-                    ? "bg-purple-500 scale-125"
-                    : "bg-purple-200 hover:bg-purple-300"
-                }`}
-              />
-            ))}
           </div>
         </div>
 
