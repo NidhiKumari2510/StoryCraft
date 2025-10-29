@@ -6,33 +6,72 @@ import {
   Heart,
   ArrowLeft,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import jsPDF from "jspdf";
 import { Story } from "../App";
 
 interface StoryDisplayProps {
-  story?: Story;
+  story?: Story | null;
 }
 
 const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
-  const location = useLocation();
-  const state = location.state as { story: Story } | null;
-
-  // ✅ Use propStory if passed, else use story from location.state
-  const story: Story | undefined = propStory || state?.story;
-
-  const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+
+  const state = location.state as { story?: Story } | null;
+
+  const [story, setStory] = useState<Story | null>(
+    propStory || state?.story || null
+  );
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const totalPages = story?.pages?.length || 0;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
-  }, [navigate]);
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-  if (!story) {
-    navigate("/create");
-    return null;
-  }
+    // ✅ Fetch from backend if not passed via state or props
+    if (!story && id) {
+      const fetchStory = async () => {
+        try {
+          setLoading(true);
+          const res = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/history`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (!res.ok) throw new Error("Failed to fetch stories");
+          const stories: Story[] = await res.json();
+          const found = stories.find((s) => s.id === id || s._id === id);
+          if (!found) {
+            alert("Story not found");
+            navigate("/history");
+            return;
+          }
+          setStory(found);
+        } catch (err) {
+          console.error(err);
+          alert("Failed to load story");
+          navigate("/history");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStory();
+    }
+  }, [story, id, navigate]);
+
+  if (loading) return <p className="text-white text-center mt-10">Loading...</p>;
+  if (!story || !story.pages || story.pages.length === 0)
+    return <p className="text-white text-center mt-10">No story available.</p>;
 
   const nextPage = () => {
     if (currentPage < story.pages.length - 1) setCurrentPage(currentPage + 1);
@@ -47,28 +86,25 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.text(story.title, 20, 20);
-
     doc.setFontSize(14);
     let yOffset = 40;
 
-    // ✅ Add explicit typing to avoid red underline
-    story.pages.forEach(
-      (page: { text: string; illustration: string }, i: number) => {
-        if (yOffset > 260) {
-          doc.addPage();
-          yOffset = 20;
-        }
-        doc.text(`Page ${i + 1}:`, 20, yOffset);
-        yOffset += 10;
-        const splitText = doc.splitTextToSize(page.text, 170);
-        doc.text(splitText, 20, yOffset);
-        yOffset += splitText.length * 7 + 10;
+    story.pages.forEach((page, i) => {
+      if (yOffset > 260) {
+        doc.addPage();
+        yOffset = 20;
       }
-    );
+      doc.text(`Page ${i + 1}:`, 20, yOffset);
+      yOffset += 10;
+      const splitText = doc.splitTextToSize(page.text || "", 170);
+      doc.text(splitText, 20, yOffset);
+      yOffset += splitText.length * 7 + 10;
+    });
 
     doc.save(`${story.title}.pdf`);
   };
 
+  // ✅ Save Story to Library (POST)
   const saveToLibrary = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -78,14 +114,17 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/stories/save`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/history`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(story),
+          body: JSON.stringify({
+            title: story.title,
+            content: story.pages.map((p) => p.text).join("\n\n"),
+          }),
         }
       );
 
@@ -100,7 +139,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
 
   return (
     <div className="flex max-w-6xl mx-auto">
-      {/* Left Fixed Poster */}
+      {/* Left Poster */}
       <div className="w-1/3 flex items-center justify-center p-6">
         <img
           src="/picture.png"
@@ -113,7 +152,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
       <div className="w-2/3 pl-6">
         {/* Back Button */}
         <button
-          onClick={() => navigate("/CreateStory")}
+          onClick={() => navigate("/create")}
           className="mb-6 flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-purple-200"
         >
           <ArrowLeft className="w-5 h-5 text-purple-600" />
@@ -129,7 +168,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
           </h1>
           <div className="flex justify-center space-x-4">
             <span className="bg-yellow-200 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold">
-              Page {currentPage + 1} of {story.pages.length}
+              Page {currentPage + 1} of {totalPages}
             </span>
           </div>
         </div>
@@ -144,7 +183,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
                 shadow-xl w-full"
               >
                 <p className="text-lg md:text-xl leading-relaxed text-purple-900 font-comic tracking-wide text-center">
-                  {story.pages[currentPage].text}
+                  {story.pages[currentPage]?.text || "No content available."}
                 </p>
               </div>
             </div>

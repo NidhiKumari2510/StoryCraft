@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Header from "./components/Header";
 import CreateStory from "./pages/CreateStory";
 import StoryDisplay from "./components/StoryDisplay";
@@ -13,7 +18,8 @@ import { isLoggedIn } from "./utils/auth";
 
 // ✅ Story interface (shared type)
 export interface Story {
-  id: string;
+  id?: string; // id might be optional
+  _id?: string; // add this line for MongoDB
   title: string;
   pages: Array<{
     text: string;
@@ -74,23 +80,33 @@ function App() {
                 path="/create"
                 element={
                   <ProtectedRoute>
-                    {/* ✅ Pass callback prop */}
                     <CreateStory onStoryGenerated={handleStoryGenerated} />
                   </ProtectedRoute>
                 }
               />
+
+              {/* ✅ Added both routes for story */}
               <Route
                 path="/story"
                 element={
                   <ProtectedRoute>
                     {generatedStory ? (
-                      <StoryDisplay story={generatedStory} />
+                      <StoryDisplay story={generatedStory ?? undefined} />
                     ) : (
                       <Navigate to="/create" />
                     )}
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/story/:id"
+                element={
+                  <ProtectedRoute>
+                    <StoryDisplay />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route
                 path="/history"
                 element={

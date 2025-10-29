@@ -13,27 +13,64 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // ✅ Fetch user's saved stories
   const fetchStories = async () => {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
 
     try {
-      const res = await fetch("http://localhost:5000/api/history", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/history`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       const data = await res.json();
-      setStories(data);
+
+      if (res.ok) {
+        setStories(data);
+      } else {
+        console.error("Error fetching stories:", data.message);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching stories:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchStories();
-  }, []);
+  // ✅ Delete story handler
+  const handleDelete = async (id: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) return navigate("/login");
 
+    if (!confirm("Are you sure you want to delete this story?")) return;
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/delete-story/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Story deleted successfully!");
+        setStories((prev) => prev.filter((story) => story._id !== id));
+      } else {
+        alert(data.message || "Failed to delete story");
+      }
+    } catch (err) {
+      console.error("Error deleting story:", err);
+      alert("Error deleting story");
+    }
+  };
+
+  // ✅ Download story as .txt
   const handleDownload = (story: Story) => {
     const blob = new Blob([story.content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -43,6 +80,10 @@ const History: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
 
   if (loading)
     return <p className="text-white text-center mt-10">Loading stories...</p>;
@@ -82,16 +123,26 @@ const History: React.FC = () => {
 
               <div className="flex justify-between">
                 <button
+                  onClick={() =>
+                    navigate(`/story/${story._id}`, { state: { story } })
+                  }
+                  className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
+                >
+                  View
+                </button>
+
+                <button
                   onClick={() => handleDownload(story)}
                   className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md text-sm"
                 >
                   Download
                 </button>
+
                 <button
-                  onClick={() => navigate(`/story/${story._id}`)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
+                  onClick={() => handleDelete(story._id)}
+                  className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm"
                 >
-                  View
+                  Delete
                 </button>
               </div>
             </div>
