@@ -26,3 +26,20 @@ export const saveStory = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Failed to save story" });
   }
 };
+
+export const deleteStory = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id || req.user._id || req.user.userId;
+
+    const deleted = await Story.findOneAndDelete({ _id: id, userId });
+    if (!deleted) {
+      return res.status(404).json({ message: "Story not found" });
+    }
+
+    res.json({ message: "Story deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete story" });
+  }
+};
+

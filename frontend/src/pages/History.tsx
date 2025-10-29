@@ -49,7 +49,7 @@ const History: React.FC = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/delete-story/${id}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/history/${id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -123,9 +123,15 @@ const History: React.FC = () => {
 
               <div className="flex justify-between">
                 <button
-                  onClick={() =>
-                    navigate(`/story/${story._id}`, { state: { story } })
-                  }
+                  onClick={() => {
+                    // Convert content to pages if needed
+                    const pages = story.content
+                      ? story.content.split(/\n\s*\n/).map((text) => ({ text }))
+                      : [];
+                    navigate(`/story/${story._id}`, {
+                      state: { story: { ...story, pages } },
+                    });
+                  }}
                   className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
                 >
                   View
