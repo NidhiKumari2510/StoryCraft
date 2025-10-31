@@ -23,7 +23,7 @@
 
 | Service | URL |
 |----------|-----|
-| **Frontend (Vercel)** | [https://story-nest-seven.vercel.app/](https://story-nest-seven.vercel.app/) |
+| **Frontend (Vercel)** | [https://story-craft-seven.vercel.app/](https://story-craft-seven.vercel.app/) |
 | **Backend (Render)** | [https://storycraft-backend-s4gn.onrender.com](https://storycraft-backend-s4gn.onrender.com) |
 
 ---
@@ -96,27 +96,6 @@ Open your browser and go to
 
 
 ---
-
-
-## 🧑‍💻 Author
-
-- 👩‍💻 Nidhi Kumari
-- 🎓 Computer Science & AI Student @ IGDTUW
-- 📧 Connect on LinkedIn
-- 💻 GitHub Profile
-
----
-
-## ⭐ Acknowledgements
-
-- Google Gemini API
-
-- Render — Backend Hosting
-
-- Vercel — Frontend Hosting
-
-- MongoDB Atlas — Cloud Database
-
 
 
 
