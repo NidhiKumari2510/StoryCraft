@@ -13,9 +13,9 @@ import PaperCutImage from "../assets/paper_cut.png";
 import PixelArtImage from "../assets/pixel_art.png";
 import WatercolorImage from "../assets/watercolor.png";
 import Cartoon3DImage from "../assets/3d_cartoon.png";
-import { Story } from "../App"; // ✅ Import type from App
+import { Story } from "../App"; //  Import type from App
 
-// ✅ Accept the prop from App.tsx
+// Accept the prop from App.tsx
 interface CreateStoryProps {
   onStoryGenerated: (story: Story) => void;
 }
@@ -90,10 +90,10 @@ const CreateStory: React.FC<CreateStoryProps> = ({ onStoryGenerated }) => {
 
       console.log("✅ Final story object:", story);
 
-      // ✅ Tell App.tsx that a story has been generated
+      //  Tell App.tsx that a story has been generated
       onStoryGenerated(story);
 
-      // ✅ Navigate to the Story page (route matches App.tsx)
+      //  Navigate to the Story page (route matches App.tsx)
       navigate("/story", { state: { story } });
     } catch (error) {
       console.error("❌ Error generating story in UI:", error);
@@ -107,8 +107,6 @@ const CreateStory: React.FC<CreateStoryProps> = ({ onStoryGenerated }) => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* ✅ Keep your full UI code exactly as it is */}
-      {/* (no change in JSX part, buttons, animations, etc.) */}
 
       {/* Hero Section */}
       <div className="text-center mb-12">

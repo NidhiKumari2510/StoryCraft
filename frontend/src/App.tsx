@@ -16,7 +16,7 @@ import History from "./pages/History";
 import AnimatedBackground from "./components/AnimatedBackground";
 import { isLoggedIn } from "./utils/auth";
 
-// ✅ Story interface (shared type)
+//  Story interface (shared type)
 export interface Story {
   id?: string; // id might be optional
   _id?: string; // add this line for MongoDB
@@ -30,17 +30,17 @@ export interface Story {
 function App() {
   const [generatedStory, setGeneratedStory] = useState<Story | null>(null);
 
-  // ✅ Callback to receive story from CreateStory
+  //  Callback to receive story from CreateStory
   const handleStoryGenerated = (story: Story) => {
     setGeneratedStory(story);
   };
 
-  // ✅ Protect certain routes
+  //  Protect certain routes
   const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return isLoggedIn() ? children : <Navigate to="/login" replace />;
   };
 
-  // ✅ Prevent logged-in users from seeing login/signup again
+  //  Prevent logged-in users from seeing login/signup again
   const AuthRoute = ({ children }: { children: JSX.Element }) => {
     return isLoggedIn() ? <Navigate to="/create" replace /> : children;
   };
@@ -85,7 +85,7 @@ function App() {
                 }
               />
 
-              {/* ✅ Added both routes for story */}
+              {/*  Added both routes for story */}
               <Route
                 path="/story"
                 element={

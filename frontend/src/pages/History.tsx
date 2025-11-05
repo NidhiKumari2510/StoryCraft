@@ -13,7 +13,7 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // ✅ Fetch user's saved stories
+  //  Fetch user's saved stories
   const fetchStories = async () => {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
@@ -40,7 +40,7 @@ const History: React.FC = () => {
     }
   };
 
-  // ✅ Delete story handler
+  //  Delete story handler
   const handleDelete = async (id: string) => {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
@@ -70,7 +70,7 @@ const History: React.FC = () => {
     }
   };
 
-  // ✅ Download story as .txt
+  //  Download story as .txt
   const handleDownload = (story: Story) => {
     const blob = new Blob([story.content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -111,13 +111,13 @@ const History: React.FC = () => {
               key={story._id}
               className="bg-white/10 border border-white/20 p-5 rounded-xl shadow-md"
             >
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-xl font-semibold text-black mb-2">
                 {story.title}
               </h3>
-              <p className="text-gray-200 line-clamp-3 mb-3">
+              <p className="text-black line-clamp-3 mb-3">
                 {story.content.slice(0, 100)}...
               </p>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-gray-600 text-sm mb-4">
                 Created: {new Date(story.createdAt).toLocaleDateString()}
               </p>
 

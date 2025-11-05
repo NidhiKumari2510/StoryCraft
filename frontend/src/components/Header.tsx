@@ -46,7 +46,7 @@ const Header: React.FC = () => {
             {!isLoggedIn ? (
               <>
                 <NavButton to="/login" current={currentPage} label="Login" />
-                <NavButton to="/signup" current={currentPage} label="Signup" />
+              {/* <NavButton to="/signup" current={currentPage} label="Signup" />  */}
               </>
             ) : (
               <button

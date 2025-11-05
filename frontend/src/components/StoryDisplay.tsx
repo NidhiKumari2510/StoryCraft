@@ -36,7 +36,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
       return;
     }
 
-    // ✅ Fetch from backend if not passed via state or props
+    //  Fetch from backend if not passed via state or props
     if (!story && id) {
       const fetchStory = async () => {
         try {
@@ -104,7 +104,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story: propStory }) => {
     doc.save(`${story.title}.pdf`);
   };
 
-  // ✅ Save Story to Library (POST)
+  //  Save Story to Library (POST)
   const saveToLibrary = async () => {
     const token = localStorage.getItem("token");
     if (!token) {

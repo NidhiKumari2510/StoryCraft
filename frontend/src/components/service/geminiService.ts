@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-// ✅ Check API key
+//  Check API key
 if (!API_KEY) {
   console.error("❌ Gemini API key is missing. Please add VITE_GEMINI_API_KEY in your .env file.");
 }
@@ -36,10 +36,10 @@ export async function generateStory(
 
     console.log("🔍 Gemini raw response:", text);
 
-    // ✅ Clean up response
+    //  Clean up response
     let cleanText = text.replace(/```json|```/g, "").trim();
 
-    // ✅ Extract only the JSON part
+    //  Extract only the JSON part
     const firstBrace = cleanText.indexOf("{");
     const lastBrace = cleanText.lastIndexOf("}");
     if (firstBrace !== -1 && lastBrace !== -1) {

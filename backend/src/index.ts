@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Middleware
+//  Middleware
 app.use(express.json());
 app.use(
   cors({
@@ -19,16 +19,16 @@ app.use(
   })
 );
 
-// ✅ Routes
+//  Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/history", historyRoutes);
 
-// ✅ Health check
+//  Health check
 app.get("/", (_, res) => {
   res.send("StoryCraft backend is running 🚀");
 });
 
-// ✅ Connect DB and start server
+//  Connect DB and start server
 connectDB();
 
 app.listen(PORT, () => {
